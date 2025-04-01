@@ -31,6 +31,16 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   energy_consomption:
-    # Config indicated by + and applies to all files under models/example/
-    example:
-      +materialized: view
+    bronze:
+      materialized: view
+      +schema: bronze
+      +tags: ['bronze', 'raw']
+    silver:
+      materialized: table
+      +schema: silver
+      +tags: ['silver', 'enriched']
+    gold:
+      materialized: table
+      +schema: gold
+      +tags: ['gold', 'metrics']
+    
