@@ -16,12 +16,12 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
 
 ## Project Structure
 
-
+![Pipeline Architecture](images/project-structure.png "Project Structure")
 
 ### Key Components
 
 - **`data-pipeline/`**: Contains the Python scripts for data ingestion and ETL processes.
-- **`energy_consomption/`**: Contains the dbt project for data transformation.
+- **`immobilier_courtage/`**: Contains the dbt project for data transformation.
 - **`myenv/`**: Python virtual environment for managing dependencies.
 
 ---
@@ -60,7 +60,7 @@ pip install -r [requirements.txt](http://_vscodecontentref_/1)
 
 ### Step 3: Configure dbt
 
-- 1. Navigate to the energy_consomption/ folder.
+- 1. Navigate to the immobilier_courtage/ folder.
 - 2. Update the dbt_project.yml file with your MotherDuck connection details.
 
 ### Step 4: Run the Pipeline
@@ -73,6 +73,6 @@ python data-pipeline/src/main.py
 - 2. Transform Data: Use dbt to run transformations.
 
 ```bash
-cd energy_consomption/
+cd immobilier_courtage/
 dbt run
 ```
