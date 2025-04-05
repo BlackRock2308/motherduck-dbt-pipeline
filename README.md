@@ -40,7 +40,7 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.12
 - Docker
 - dbt CLI
 - Streamlit
