@@ -1,8 +1,15 @@
 import streamlit as st
 import duckdb
+import pandas as pd
 import plotly.express as px
-from datetime import datetime
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 import os
+import sys
+
+# Ajout du chemin racine au path pour pouvoir importer utils et config
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
 
 DATABASE_NAME = os.getenv('DATABASE_NAME', 'immobilier_courtage')
 
@@ -11,128 +18,320 @@ st.set_page_config(
     page_title="Dashboard Courtage Immobilier",
     page_icon="🏠",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
+# Chargement des styles CSS personnalisés
+with open("../assets/css/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+
+@st.cache_resource
+def get_connect_to_motherduck():
+    """
+    Établit une connexion à MotherDuck et attache la base de données
+    """
+    try:
+        # Connexion à DuckDB en mode MotherDuck
+        conn = duckdb.connect(f"md:{DATABASE_NAME}", read_only=False)
+        return conn
+    except Exception as e:
+        raise
+
+# Connexion à MotherDuck
 @st.cache_resource
 def get_motherduck_connection():
-    """Établit une connexion sécurisée à MotherDuck"""
+    """Établit une connexion à MotherDuck et la met en cache"""
     token = os.getenv("MOTHERDUCK_TOKEN")
     if not token:
-        st.error("Token d'authentification MotherDuck manquant")
+        st.error("Le token MotherDuck est manquant. Veuillez le définir dans les variables d'environnement.")
         st.stop()
-    
-    conn_string = f"md:{DATABASE_NAME}?motherduck_token={token}"
+    conn_string = f"md:immobilier_courtage?MOTHERDUCK_TOKEN={token}"
     try:
         return duckdb.connect(conn_string)
     except Exception as e:
-        st.error(f"Erreur de connexion : {str(e)}")
+        st.error(f"Erreur de connexion à MotherDuck: {e}")
         st.stop()
 
+# Fonction générique pour charger les données
 @st.cache_data(ttl=3600)
-def load_data(query):
-    """Charge les données depuis la base de données avec gestion des erreurs"""
-    conn = get_motherduck_connection()
+def load_data(query, periode=None, date_column=None):
+    """Charge les données depuis la base avec un filtre de période facultatif"""
+    conn = get_connect_to_motherduck()
+    #conn = get_motherduck_connection()
+    if periode and date_column:
+        date_limite = (datetime.now() - timedelta(days=periode)).strftime('%Y-%m-%d')
+        query += f" WHERE {date_column} >= '{date_limite}'"
     try:
         return conn.execute(query).fetchdf()
     except Exception as e:
-        st.error(f"Erreur lors de l'exécution de la requête : {str(e)}")
+        st.error(f"Erreur lors du chargement des données: {e}")
         st.stop()
 
-def clean_taux_data(df):
-    """Nettoie les données pour les visualisations"""
-    return df[
-        (df['categorie_professionnelle'].notna()) &
-        (df['categorie_professionnelle'].str.strip() != '') &
-        (df['segment_age'] != 'Non défini')
-    ].copy()
+# Chargement des différentes métriques
+def load_metrics_banques():
+    return load_data("SELECT * FROM main_gold.metriques_banques")
 
+def load_conversion_opportunites(periode):
+    return load_data("SELECT * FROM main_gold.taux_conversion_opportunites")
+
+def load_taux_profil():
+    return load_data("SELECT * FROM main_gold.taux_par_profil")
+
+def load_performance_source(periode):
+    return load_data("SELECT * FROM main_gold.performance_source", periode, "mois_acquisition")
+
+# Interface utilisateur Streamlit
 def main():
-    # Configuration de la sidebar
+    # Sidebar pour les filtres
     st.sidebar.title("Filtres")
-    st.sidebar.markdown("---")
-
-    # Chargement des données
-    with st.spinner("Mise à jour des données..."):
-        df_banques = load_data("SELECT * FROM main_gold.metriques_banques")
-        df_taux = load_data("SELECT * FROM main_gold.taux_par_profil")
-        df_perf = load_data("SELECT * FROM main_gold.performance_source")
-        df_conv = load_data("SELECT * FROM main_gold.taux_conversion_opportunites")
-
-    # Nettoyage des données
-    df_taux_clean = clean_taux_data(df_taux)
-
-    # En-tête principal
-    st.title("📈 Tableau de Bord - Courtage Immobilier")
-    st.caption(f"Dernière actualisation : {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-
-    # KPI Principaux
-    st.header("Indicateurs Clés")
+    
+    # Filtre de période
+    periode_options = {
+        "Dernier mois": 30,
+        "Dernier trimestre": 90,
+        "Dernière année": 365,
+        "Toutes les données": None
+    }
+    periode_selectionnee = st.sidebar.selectbox(
+        "Période d'analyse",
+        options=list(periode_options.keys()),
+        index=2  # Par défaut: dernière année
+    )
+    periode = periode_options[periode_selectionnee]
+    
+    # Filtres additionnels
+    with st.sidebar.expander("Filtres avancés"):
+        # Filtre pour le segment client
+        segment_age_options = ["Tous", "Jeune", "Milieu de vie", "Senior"]
+        segment_age = st.selectbox("Segment d'âge", segment_age_options, index=0)
+        
+        segment_revenus_options = ["Tous", "Revenus modestes", "Revenus moyens", "Revenus élevés"]
+        segment_revenus = st.selectbox("Segment de revenus", segment_revenus_options, index=0)
+        
+        usage_bien_options = ["Tous", "Résidence principale", "Investissement locatif"]
+        usage_bien = st.selectbox("Usage du bien", usage_bien_options, index=0)
+    
+    # Chargement des données avec indicateurs de chargement
+    with st.spinner("Chargement des données..."):
+        df_banques = load_metrics_banques()
+        df_conversion = load_conversion_opportunites(periode)
+        df_taux_profil = load_taux_profil()
+        df_perf_source = load_performance_source(periode)
+        
+        # Application des filtres avancés (si nécessaire)
+        if segment_age != "Tous" and "segment_age" in df_taux_profil.columns:
+            df_taux_profil = df_taux_profil[df_taux_profil["segment_age"] == segment_age]
+        
+        if segment_revenus != "Tous" and "segment_revenus" in df_taux_profil.columns:
+            df_taux_profil = df_taux_profil[df_taux_profil["segment_revenus"] == segment_revenus]
+            
+        if usage_bien != "Tous" and "usage_bien" in df_taux_profil.columns:
+            df_taux_profil = df_taux_profil[df_taux_profil["usage_bien"] == usage_bien]
+    
+    # En-tête de la page
+    st.title("📈 Dashboard Courtage Immobilier : France")
+    st.markdown(f"*Données à jour au {datetime.now().strftime('%d/%m/%Y')}*")
+    
+    # KPIs principaux
+    st.header("Indicateurs clés de performance")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("🏦 Banques Actives", df_banques['partenaire_id'].nunique())
-    col2.metric("📄 Propositions", df_banques['nombre_propositions'].sum())
-    col3.metric("💶 Taux Moyen", f"{df_banques['taux_moyen_hors_assurance'].mean():.2f}%")
-    col4.metric("📈 Taux Conversion", f"{df_conv['taux_conversion'].mean():.2f}%")
+    
+    total_opportunites = df_perf_source["nombre_opportunites"].count() if not df_perf_source.empty else 0
+    total_converties = df_perf_source["nombre_converties"].sum() if not df_perf_source.empty else 0
+    #taux_conversion_global = (total_converties / total_opportunites * 100) if total_opportunites > 0 else 0
+    
+    #col1.metric("Nombre d'opportunités", f"{total_opportunites:,}".replace(",", " "))
+    col1.metric("🏦 Nombre de banques", df_banques['partenaire_id'].nunique())
+    col2.metric("💰 Nombre de propositions", f"{df_banques['nombre_propositions'].sum():,}".replace(",", " ") if not df_banques.empty else 0)
+    #col3.metric("☁️ Taux de conversion", f"{taux_conversion_global:.1f}%")
+    col3.metric("☁️ Montant moyen du prêt", f"{df_banques['montant_moyen'].mean():,.0f} €")
+    col4.metric("🌟 Taux moyen hors assurance", f"{df_banques['taux_moyen_hors_assurance'].mean():.2f}%" if not df_banques.empty else "0.00%")
+    
+    # Aperçu des données filtrées
+    with st.expander("Aperçu des données"):
+        st.dataframe(df_banques.head(10), use_container_width=True)
 
-    # Visualisations
-    tab1, tab2, tab3 = st.tabs(["🏦 Banques", "📊 Analyse Taux", "👤 Profils Clients"])
+    # --------- SECTION 2: ANALYSE DES  PROPOSITION TES PAR SEGMENT D'AGE ---------
+    st.header("Analyse des propositions par segment d'age")
+    # Calcul des ventes par catégorie
+    proposition_per_age = df_taux_profil.groupby("segment_age")["nombre_propositions"].sum().reset_index()
+    proposition_per_age = proposition_per_age.rename(columns={"nombre_propositions": "total_propositions"})
+    proposition_per_age = proposition_per_age.sort_values("total_propositions", ascending=False)
 
-    with tab1:
-        st.subheader("Performance des Banques")
-        fig = px.bar(
-            df_banques.sort_values('nombre_propositions', ascending=False).head(10),
-            x='partenaire_id',
-            y='nombre_propositions',
-            color='taux_moyen_hors_assurance',
-            labels={'partenaire_id': 'Banque', 'nombre_propositions': 'Propositions'},
-            color_continuous_scale='Bluered'
+
+    # Visualisation des ventes par catégorie avec un graphique en barres
+    fig1 = px.bar(
+        proposition_per_age,
+        x="segment_age",
+        y="total_propositions",
+        color="segment_age",
+        labels={"total_propositions": "Propositions", "segment_age": "Age"},
+        template=config.PLOT_CONFIG["template"],
+        color_discrete_sequence=config.PLOT_CONFIG["color_discrete_sequence"],
+    )
+
+    fig1.update_layout(
+        height=400,
+        margin=dict(l=20, r=20, t=20, b=30),
+        showlegend=False,
+        xaxis_title="",
+        yaxis_title="Propositions",
+    )
+
+    st.plotly_chart(fig1, use_container_width=True)
+    
+    
+    if not df_banques.empty:
+        # Tri des banques par nombre de propositions                
+    
+        st.subheader("Répartition des durées de prêt")
+        duree_data = df_banques[[
+            'count_duree_15ans_ou_moins',
+            'count_duree_15_20ans',
+            'count_duree_20_25ans',
+            'count_duree_plus_25ans']].sum().reset_index()
+
+        duree_data.columns = ['Durée', 'Nombre']
+        duree_data['Durée'] = duree_data['Durée'].str.replace('count_duree_', '').str.replace('_', ' ').str.replace('ou moins', '≤ 15 ans').str.replace('plus 25ans', '> 25 ans')
+
+        fig_duree = px.bar(
+            duree_data,
+            x='Durée',
+            y='Nombre',
+            title="Répartition globale des durées de prêt",
+            labels={"Durée": "Durée du prêt", "Nombre": "Nombre de prêts"}
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig_duree, use_container_width=True)
 
-    with tab2:
-        st.subheader("Distribution des Taux d'Intérêt")
-        fig = px.box(
-            df_taux_clean,
-            x='segment_revenus',
-            y='taux_moyen_hors_assurance',
-            color='segment_endettement',
-            labels={
-                'segment_revenus': 'Tranche de Revenus',
-                'taux_moyen_hors_assurance': 'Taux Hors Assurance'
-            }
-        )
-        st.plotly_chart(fig, use_container_width=True)
 
-    with tab3:
-        st.subheader("Analyse des Profils Clients")
+    
+    # Profil des clients
+    st.header("Analyse des profils clients")
+    
+    if not df_taux_profil.empty:
+        # Regroupement par segment d'âge
+        tabs_profil = st.tabs(["Segment d'âge", "Niveau de revenus", "Situation professionnelle", "Type de projet"])
         
-        col1, col2 = st.columns(2)
+        with tabs_profil[0]:
+            if "segment_age" in df_taux_profil.columns:
+                age_data = df_taux_profil.groupby('segment_age').agg({
+                    'nombre_propositions': 'sum',
+                    'taux_moyen_hors_assurance': 'mean'
+                }).reset_index()
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Répartition des propositions par âge
+                    fig_age_pie = px.pie(
+                        age_data,
+                        names='segment_age',
+                        values='nombre_propositions',
+                        title="Répartition des propositions par segment d'âge",
+                        hole=0.4
+                    )
+                    fig_age_pie.update_traces(textinfo='percent+label')
+                    st.plotly_chart(fig_age_pie, use_container_width=True)
+                
+                with col2:
+                    # Taux moyens par segment d'âge
+                    fig_age_taux = px.bar(
+                        age_data,
+                        x='segment_age',
+                        y='taux_moyen_hors_assurance',
+                        title="Taux moyen par segment d'âge",
+                        labels={'segment_age': "Segment d'âge", 'taux_moyen_hors_assurance': 'Taux moyen (%)'},
+                        color='taux_moyen_hors_assurance',
+                        color_continuous_scale=px.colors.sequential.Blues,
+                        text_auto='.2f'
+                    )
+                    fig_age_taux.update_traces(texttemplate='%{text}%', textposition='outside')
+                    st.plotly_chart(fig_age_taux, use_container_width=True)
         
-        with col1:
-            fig = px.treemap(
-                df_taux_clean,
-                path=[px.Constant("Tous"), 'categorie_professionnelle', 'segment_age'],
-                values='nombre_propositions',
-                color='taux_moyen_hors_assurance',
-                color_continuous_scale='Tealgrn',
-                hover_data=['taux_median'],
-                labels={'taux_moyen_hors_assurance': 'Taux Moyen'}
-            )
-            fig.update_traces(
-                hovertemplate="<b>%{label}</b><br>Propositions: %{value}<br>Taux médian: %{customdata[0]:.2f}%"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col2:
-            fig = px.sunburst(
-                df_taux_clean.dropna(subset=['usage_bien', 'type_projet']),
-                path=['usage_bien', 'type_projet'],
-                values='nombre_propositions',
-                color='taux_moyen_hors_assurance',
-                color_continuous_scale='Purpor',
-                labels={'taux_moyen_hors_assurance': 'Taux Moyen'}
-            )
-            st.plotly_chart(fig, use_container_width=True)
+        with tabs_profil[1]:
+            if "segment_revenus" in df_taux_profil.columns:
+                revenus_data = df_taux_profil.groupby('segment_revenus').agg({
+                    'nombre_propositions': 'sum',
+                    'taux_moyen_hors_assurance': 'mean'
+                }).reset_index()
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Répartition des propositions par niveau de revenus
+                    fig_revenus_pie = px.pie(
+                        revenus_data,
+                        names='segment_revenus',
+                        values='nombre_propositions',
+                        title="Répartition des propositions par niveau de revenus",
+                        hole=0.4
+                    )
+                    fig_revenus_pie.update_traces(textinfo='percent+label')
+                    st.plotly_chart(fig_revenus_pie, use_container_width=True)
+                
+                with col2:
+                    # Taux moyens par niveau de revenus
+                    fig_revenus_taux = px.bar(
+                        revenus_data,
+                        x='segment_revenus',
+                        y='taux_moyen_hors_assurance',
+                        title="Taux moyen par niveau de revenus",
+                        labels={'segment_revenus': 'Niveau de revenus', 'taux_moyen_hors_assurance': 'Taux moyen (%)'},
+                        color='taux_moyen_hors_assurance',
+                        color_continuous_scale=px.colors.sequential.Blues,
+                        text_auto='.2f'
+                    )
+                    fig_revenus_taux.update_traces(texttemplate='%{text}%', textposition='outside')
+                    st.plotly_chart(fig_revenus_taux, use_container_width=True)
+        
+        with tabs_profil[2]:
+            if "categorie_professionnelle" in df_taux_profil.columns:
+                prof_data = df_taux_profil.groupby('categorie_professionnelle').agg({
+                    'nombre_propositions': 'sum',
+                    'taux_moyen_hors_assurance': 'mean'
+                }).reset_index().sort_values(by='nombre_propositions', ascending=False)
+                
+                # Graphique des taux moyens par catégorie professionnelle
+                fig_prof_taux = px.bar(
+                    prof_data.head(10),
+                    x='categorie_professionnelle',
+                    y='taux_moyen_hors_assurance',
+                    title="Taux moyen par catégorie professionnelle",
+                    labels={'categorie_professionnelle': 'Catégorie professionnelle', 'taux_moyen_hors_assurance': 'Taux moyen (%)'},
+                    color='taux_moyen_hors_assurance',
+                    color_continuous_scale=px.colors.sequential.Blues,
+                    text_auto='.2f'
+                )
+                fig_prof_taux.update_traces(texttemplate='%{text}%', textposition='outside')
+                fig_prof_taux.update_xaxes(tickangle=45)
+                st.plotly_chart(fig_prof_taux, use_container_width=True)
+        
+        with tabs_profil[3]:
+            if "usage_bien" in df_taux_profil.columns and "type_projet" in df_taux_profil.columns:
+                # Combinaison type de projet / usage du bien
+                projet_data = df_taux_profil.groupby(['type_projet', 'usage_bien']).agg({
+                    'nombre_propositions': 'sum',
+                    'taux_moyen_hors_assurance': 'mean'
+                }).reset_index()
+                
+                # Graphique des taux moyens par type de projet et usage du bien
+                fig_projet_taux = px.bar(
+                    projet_data,
+                    x='type_projet',
+                    y='taux_moyen_hors_assurance',
+                    color='usage_bien',
+                    barmode='group',
+                    title="Taux moyen par type de projet et usage du bien",
+                    labels={'type_projet': 'Type de projet', 'taux_moyen_hors_assurance': 'Taux moyen (%)', 'usage_bien': 'Usage du bien'},
+                    text_auto='.2f'
+                )
+                fig_projet_taux.update_traces(texttemplate='%{text}%', textposition='outside')
+                st.plotly_chart(fig_projet_taux, use_container_width=True)
+    
+    # Footer avec informations
+    st.markdown("---")
+    st.markdown("*Dashboard de performance du courtage immobilier - Données extraites de la base MotherDuck*")
 
 if __name__ == "__main__":
     main()

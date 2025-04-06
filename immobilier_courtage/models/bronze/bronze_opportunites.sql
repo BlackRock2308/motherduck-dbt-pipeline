@@ -28,7 +28,10 @@ renamed AS (
         
         -- Informations sur le projet immobilier
         TypBien__c AS type_bien,
-        TypProj__c AS type_projet,
+        CASE 
+            WHEN TypProj__c = 'Acquisition+travaux' THEN 'Acquisition + travaux'
+            ELSE TypProj__c
+        END AS type_projet,
         UsagBien__c AS usage_bien,
         Deja_souscrit_credit_immo__c AS deja_souscrit_credit,
         Connaissances_en_immobilier__c AS connaissances_immobilier,
