@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: opportunites_enrichies
+    description: >
+      This model represents enriched opportunities data, including calculated metrics such as total loan amount, client segmentation, and conversion indicators.
+    columns:
+      - name: montant_total_pret
+        description: Total loan amount calculated as the sum of all loan components.
+        tests:
+          - not_null
+      - name: segment_age
+        description: Client age segment (e.g., Jeune, Milieu de vie, Senior).
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Jeune', 'Milieu de vie', 'Senior', 'Non défini']
+      - name: segment_revenus
+        description: Client income segment (e.g., Revenus modestes, moyens, élevés).
+        tests:
+          - accepted_values:
+              values: ['Revenus modestes', 'Revenus moyens', 'Revenus élevés', 'Non défini']
+      - name: is_converted
+        description: Indicator of whether the opportunity was converted (1 for converted, 0 otherwise).
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+  - name: metriques_banques
+    description: >
+      This model aggregates metrics by banking partners, including average rates, loan amounts, and performance indicators.
+    columns:
+      - name: partenaire_id
+        description: Unique identifier for the banking partner.
+        tests:
+          - unique
+      - name: nombre_propositions
+        description: Total number of proposals made by the banking partner.
+        tests:
+          - not_null
+      - name: taux_moyen_hors_assurance
+        description: Average interest rate excluding insurance for the banking partner.
+      - name: montant_moyen
+        description: Average loan amount for the banking partner.
+    
+  - name: performance_source
+    description: >
+      This model calculates performance metrics by acquisition source, including conversion rates and average loan amounts.
+    columns:
+      - name: origine
+        description: Acquisition source (e.g., online, referral, etc.).
+      - name: taux_conversion
+        description: Conversion rate for the acquisition source.
+      - name: montant_moyen_pret
+        description: Average loan amount for the acquisition source.

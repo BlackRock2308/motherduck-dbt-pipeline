@@ -76,3 +76,15 @@ python data-pipeline/src/main.py
 cd immobilier_courtage/
 dbt run
 ```
+
+### Step 5: Run the Streamlit Application
+
+- 1. Navigate to the streamlit/ folder:
+```bash 
+cd streamlit/
+```
+
+- 2. Run the Streamlit application:
+```bash 
+streamlit run app.py
+```
