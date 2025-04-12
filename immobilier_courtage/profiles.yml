@@ -1,0 +1,21 @@
+immobilier_courtage:
+  outputs:
+    dev:
+      type: duckdb
+      path: md:immobilier_courtage
+      extensions:
+        - httpfs
+        - parquet
+        - motherduck
+      threads: 1
+
+    prod:
+      type: duckdb
+      path: md:immobilier_courtage
+      extensions:
+        - httpfs
+        - parquet
+        - motherduck
+      threads: 4
+
+  target: dev
