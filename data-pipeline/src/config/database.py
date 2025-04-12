@@ -1,7 +1,6 @@
-import os
 import duckdb
-from logger import logger
-from config import DATABASE_NAME
+from config.logger import logger
+from config.constants import DATABASE_NAME
 
 
 def connect_to_motherduck():
@@ -11,7 +10,6 @@ def connect_to_motherduck():
     try:
         logger.info("Connexion à MotherDuck")
 
-        # Connexion à DuckDB en mode MotherDuck
         conn = duckdb.connect(f"md:{DATABASE_NAME}", read_only=False)
 
         logger.info(f"Base de données active: {DATABASE_NAME}")
