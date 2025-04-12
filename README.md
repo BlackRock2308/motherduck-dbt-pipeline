@@ -2,6 +2,12 @@
 
 This project demonstrates an end-to-end data engineering pipeline, from data ingestion to analytics and visualization. The pipeline is built using modern tools and follows a medallion architecture approach for data transformation and organization.
 
+## Project Architecture
+
+The workflow between the different layers of the project is illustrated below:
+
+![Project Architecture](images/workflow-architecture.jpg "Project Architecture")
+
 ## Project Overview
 
 1. **Data Ingestion**: CSV files are ingested from GitHub.
@@ -11,6 +17,7 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
    - **Silver Layer**: Cleaned and enriched data.
    - **Gold Layer**: Aggregated and analytics-ready data.
 4. **Data Visualization**: Dashboards and analytics applications are built using **Streamlit**.
+5. **Workflow Orchestration**: The pipeline is orchestrated using **Dagster**.
 
 ---
 
@@ -22,7 +29,9 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
 
 - **`data-pipeline/`**: Contains the Python scripts for data ingestion and ETL processes.
 - **`immobilier_courtage/`**: Contains the dbt project for data transformation.
+- **`dbt_dagster_immo/`**: Contains the Dagster project for workflow orchestration.
 - **`myenv/`**: Python virtual environment for managing dependencies.
+
 
 ---
 
@@ -31,6 +40,7 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
 - **MotherDuck**: Cloud-based DuckDB for data storage.
 - **dbt**: Data transformation and modeling.
 - **Streamlit**: Dashboard and analytics application.
+- **Dagster**: Workflow orchestration.
 - **Python**: For ETL and data ingestion scripts.
 - **Docker**: For containerizing the pipeline.
 
@@ -44,6 +54,7 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
 - Docker
 - dbt CLI
 - Streamlit
+- Dagster
 
 ### Step 1: Clone the Repository
 
@@ -88,3 +99,16 @@ cd streamlit/
 ```bash 
 streamlit run app.py
 ```
+
+### Step 6: Access the Dagster Server
+
+- 1. Navigate to the dbt_dagster_immo/ folder:
+```bash 
+cd dbt_dagster_immo/
+```
+
+- 2. Start the Dagster server:
+```bash 
+DAGSTER_DBT_PARSE_PROJECT_ON_LOAD=1 dagster dev  
+```
+- 3. Open your browser and go to http://localhost:3000 to access the Dagster UI.

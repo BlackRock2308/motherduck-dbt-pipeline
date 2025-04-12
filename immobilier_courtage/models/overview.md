@@ -10,7 +10,7 @@ This project demonstrates an end-to-end data engineering pipeline, leveraging **
 - **Gold Layer**: Aggregated and analytics-ready data for dashboards.
 
 Here is the architecture of our project:
-![Input Schema](assets/motherduck-dbt-pipeline.jpeg)
+# ![Input Schema](assets/archi.jpeg)
 
 Key features of this pipeline include:
 - Client segmentation based on age, income, and employment type.
