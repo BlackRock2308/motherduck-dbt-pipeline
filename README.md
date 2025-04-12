@@ -71,17 +71,17 @@ pip install -r [requirements.txt](http://_vscodecontentref_/1)
 
 ### Step 3: Configure dbt
 
-- 1. Navigate to the immobilier_courtage/ folder.
-- 2. Update the dbt_project.yml file with your MotherDuck connection details.
+- Navigate to the immobilier_courtage/ folder.
+- Update the dbt_project.yml file with your MotherDuck connection details.
 
 ### Step 4: Run the Pipeline
 
-- 1. Ingest Data: Run the Python ETL script to ingest CSV files from GitHub and load them into MotherDuck.
+- Ingest Data: Run the Python ETL script to ingest CSV files from GitHub and load them into MotherDuck.
 ```bash 
 python data-pipeline/src/main.py 
 ```
 
-- 2. Transform Data: Use dbt to run transformations.
+- Transform Data: Use dbt to run transformations.
 
 ```bash
 cd immobilier_courtage/
@@ -90,25 +90,25 @@ dbt run
 
 ### Step 5: Run the Streamlit Application
 
-- 1. Navigate to the streamlit/ folder:
+- Navigate to the streamlit/ folder:
 ```bash 
 cd streamlit/
 ```
 
-- 2. Run the Streamlit application:
+- Run the Streamlit application:
 ```bash 
 streamlit run app.py
 ```
 
 ### Step 6: Access the Dagster Server
 
-- 1. Navigate to the dbt_dagster_immo/ folder:
+- Navigate to the dbt_dagster_immo/ folder:
 ```bash 
 cd dbt_dagster_immo/
 ```
 
-- 2. Start the Dagster server:
+- Start the Dagster server:
 ```bash 
 DAGSTER_DBT_PARSE_PROJECT_ON_LOAD=1 dagster dev  
 ```
-- 3. Open your browser and go to http://localhost:3000 to access the Dagster UI.
+- Open your browser and go to http://localhost:3000 to access the Dagster UI.
