@@ -6,7 +6,7 @@ This project demonstrates an end-to-end data engineering pipeline, from data ing
 
 The workflow between the different layers of the project is illustrated below:
 
-![Project Architecture](images/workflow-architecture.jpg "Project Architecture")
+![Project Architecture](images/project-architecture.jpeg "Project Architecture")
 
 ## Project Overview
 
