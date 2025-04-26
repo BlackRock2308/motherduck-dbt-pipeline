@@ -9,7 +9,8 @@ import sys
 from streamlit_extras.app_logo import add_logo
 from config import COLORS, PLOT_CONFIG, TEXTS
 # Ajout du chemin racine au path pour pouvoir importer utils et config
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+css_path = os.path.join(script_dir, "assets", "css", "style.css")
 
 DATABASE_NAME = os.getenv('DATABASE_NAME', 'immobilier_courtage')
 
@@ -21,10 +22,15 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Chargement des styles CSS personnalisés
-with open("assets/css/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
+# Now open the file using the absolute path and apply the CSS
+try:
+    with open(css_path) as f:
+        css_content = f.read()
+    
+    # Apply the CSS using st.markdown
+    st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+except FileNotFoundError:
+    st.error(f"Could not find CSS file at: {css_path}")
 
 @st.cache_resource
 def get_connect_to_motherduck():
