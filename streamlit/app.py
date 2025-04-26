@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 import os
 import sys
 from streamlit_extras.app_logo import add_logo
+from config import COLORS, PLOT_CONFIG, TEXTS
 # Ajout du chemin racine au path pour pouvoir importer utils et config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import constants
 
 DATABASE_NAME = os.getenv('DATABASE_NAME', 'immobilier_courtage')
 
@@ -38,27 +38,12 @@ def get_connect_to_motherduck():
     except Exception as e:
         raise
 
-# Connexion à MotherDuck
-@st.cache_resource
-def get_motherduck_connection():
-    """Établit une connexion à MotherDuck et la met en cache"""
-    token = os.getenv("MOTHERDUCK_TOKEN")
-    if not token:
-        st.error("Le token MotherDuck est manquant. Veuillez le définir dans les variables d'environnement.")
-        st.stop()
-    conn_string = f"md:immobilier_courtage?MOTHERDUCK_TOKEN={token}"
-    try:
-        return duckdb.connect(conn_string)
-    except Exception as e:
-        st.error(f"Erreur de connexion à MotherDuck: {e}")
-        st.stop()
 
 # Fonction générique pour charger les données
 @st.cache_data(ttl=3600)
 def load_data(query, periode=None, date_column=None):
     """Charge les données depuis la base avec un filtre de période facultatif"""
     conn = get_connect_to_motherduck()
-    #conn = get_motherduck_connection()
     if periode and date_column:
         date_limite = (datetime.now() - timedelta(days=periode)).strftime('%Y-%m-%d')
         query += f" WHERE {date_column} >= '{date_limite}'"
@@ -84,7 +69,7 @@ def load_performance_source(periode):
 # Interface utilisateur Streamlit
 def main():
     
-    st.sidebar.image("../images/luffy.jpg")
+    #st.sidebar.image("../images/luffy.jpg")
 
     # Sidebar pour les filtres
     st.sidebar.title("Filtres")
@@ -170,8 +155,8 @@ def main():
         y="total_propositions",
         color="segment_age",
         labels={"total_propositions": "Propositions", "segment_age": "Age"},
-        template=constants.PLOT_CONFIG["template"],
-        color_discrete_sequence=constants.PLOT_CONFIG["color_discrete_sequence"],
+        template=PLOT_CONFIG["template"],
+        color_discrete_sequence=PLOT_CONFIG["color_discrete_sequence"],
     )
 
     fig1.update_layout(

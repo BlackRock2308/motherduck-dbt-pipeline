@@ -1,0 +1,49 @@
+Running with dbt=1.9.3
+Registered adapter: duckdb=1.9.2
+[[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 3 unused configuration paths:
+- models.energy_consomption.bronze
+- models.energy_consomption.silver
+- models.energy_consomption.gold
+Found 8 models, 8 data tests, 542 macros
+
+Concurrency: 1 threads (target='dev')
+
+1 of 16 START sql view model main_bronze.bronze_opportunites ................... [RUN]
+1 of 16 OK created sql view model main_bronze.bronze_opportunites .............. [[32mOK[0m in 2.28s]
+2 of 16 START sql view model main_bronze.bronze_propositions ................... [RUN]
+2 of 16 OK created sql view model main_bronze.bronze_propositions .............. [[32mOK[0m in 2.00s]
+3 of 16 START sql table model main_silver.opportunites_enrichies ............... [RUN]
+3 of 16 OK created sql table model main_silver.opportunites_enrichies .......... [[32mOK[0m in 5.50s]
+4 of 16 START sql table model main_silver.propositions_enrichies ............... [RUN]
+4 of 16 OK created sql table model main_silver.propositions_enrichies .......... [[32mOK[0m in 3.83s]
+5 of 16 START test accepted_values_opportunites_enrichies_is_converted__0__1 ... [RUN]
+5 of 16 PASS accepted_values_opportunites_enrichies_is_converted__0__1 ......... [[32mPASS[0m in 0.18s]
+6 of 16 START test accepted_values_opportunites_enrichies_segment_age__Jeune__Milieu_de_vie__Senior__Non_d_fini  [RUN]
+6 of 16 PASS accepted_values_opportunites_enrichies_segment_age__Jeune__Milieu_de_vie__Senior__Non_d_fini  [[32mPASS[0m in 0.18s]
+7 of 16 START test accepted_values_opportunites_enrichies_segment_revenus__Revenus_modestes__Revenus_moyens__Revenus_lev_s__Non_d_fini  [RUN]
+7 of 16 PASS accepted_values_opportunites_enrichies_segment_revenus__Revenus_modestes__Revenus_moyens__Revenus_lev_s__Non_d_fini  [[32mPASS[0m in 0.22s]
+8 of 16 START test not_null_opportunites_enrichies_is_converted ................ [RUN]
+8 of 16 PASS not_null_opportunites_enrichies_is_converted ...................... [[32mPASS[0m in 0.18s]
+9 of 16 START test not_null_opportunites_enrichies_montant_total_pret .......... [RUN]
+9 of 16 PASS not_null_opportunites_enrichies_montant_total_pret ................ [[32mPASS[0m in 0.18s]
+10 of 16 START test not_null_opportunites_enrichies_segment_age ................ [RUN]
+10 of 16 PASS not_null_opportunites_enrichies_segment_age ...................... [[32mPASS[0m in 0.18s]
+11 of 16 START sql table model main_gold.metriques_banques ..................... [RUN]
+11 of 16 OK created sql table model main_gold.metriques_banques ................ [[32mOK[0m in 2.65s]
+12 of 16 START sql table model main_gold.taux_par_profil ....................... [RUN]
+12 of 16 OK created sql table model main_gold.taux_par_profil .................. [[32mOK[0m in 1.94s]
+13 of 16 START sql table model main_gold.performance_source .................... [RUN]
+13 of 16 OK created sql table model main_gold.performance_source ............... [[32mOK[0m in 2.13s]
+14 of 16 START sql table model main_gold.taux_conversion_opportunites .......... [RUN]
+14 of 16 OK created sql table model main_gold.taux_conversion_opportunites ..... [[32mOK[0m in 2.45s]
+15 of 16 START test not_null_metriques_banques_nombre_propositions ............. [RUN]
+15 of 16 PASS not_null_metriques_banques_nombre_propositions ................... [[32mPASS[0m in 0.17s]
+16 of 16 START test unique_metriques_banques_partenaire_id ..................... [RUN]
+16 of 16 PASS unique_metriques_banques_partenaire_id ........................... [[32mPASS[0m in 0.22s]
+
+Finished running 6 table models, 8 data tests, 2 view models in 0 hours 0 minutes and 27.14 seconds (27.14s).
+
+[32mCompleted successfully[0m
+
+Done. PASS=16 WARN=0 ERROR=0 SKIP=0 TOTAL=16

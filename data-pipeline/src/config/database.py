@@ -34,20 +34,26 @@ def create_schema_if_not_exists(conn):
 
 def load_data_to_motherduck(conn, df, table_name, load_timestamp):
     """
-    Charge un DataFrame dans une table MotherDuck avec des colonnes de traçabilité
+    Loads DataFrame to MotherDuck after converting to Parquet
     """
     try:
-        logger.info(f"Chargement des données dans source.{table_name}")
+        logger.info(f"Loading data into source.{table_name}")
         
+        # Add tracking columns
         df['_loaded_at'] = load_timestamp
         df['_source_file'] = table_name
         
-        conn.execute(f"CREATE OR REPLACE TABLE source.{table_name} AS SELECT * FROM df")
+        # Write to temporary parquet file
+        temp_parquet_path = f"/tmp/{table_name}.parquet"
+        df.to_parquet(temp_parquet_path, index=False)
+        
+        # Create or replace table using Parquet
+        conn.execute(f"CREATE OR REPLACE TABLE source.{table_name} AS SELECT * FROM read_parquet('{temp_parquet_path}')")
         
         record_count = conn.execute(f"SELECT COUNT(*) FROM source.{table_name}").fetchone()[0]
-        logger.info(f"{record_count} enregistrements chargés dans source.{table_name}")
+        logger.info(f"{record_count} records loaded into source.{table_name}")
         
         return record_count
     except Exception as e:
-        logger.error(f"Erreur lors du chargement de source.{table_name}: {e}")
+        logger.error(f"Error loading source.{table_name}: {e}")
         raise

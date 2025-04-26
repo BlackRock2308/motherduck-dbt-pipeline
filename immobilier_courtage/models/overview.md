@@ -10,7 +10,7 @@ This project demonstrates an end-to-end data engineering pipeline, leveraging **
 - **Gold Layer**: Aggregated and analytics-ready data for dashboards.
 
 Here is the architecture of our project:
-# ![Input Schema](assets/archi.jpeg)
+# ![Input Schema](assets/model.png)
 
 Key features of this pipeline include:
 - Client segmentation based on age, income, and employment type.

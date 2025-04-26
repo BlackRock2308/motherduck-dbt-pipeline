@@ -1,0 +1,16 @@
+Running with dbt=1.9.3
+Registered adapter: duckdb=1.9.2
+[[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 3 unused configuration paths:
+- models.energy_consomption.bronze
+- models.energy_consomption.silver
+- models.energy_consomption.gold
+Found 8 models, 8 data tests, 542 macros
+
+Concurrency: 1 threads (target='dev')
+
+
+Finished running  in 0 hours 1 minutes and 3.35 seconds (63.35s).
+Encountered an error:
+Runtime Error
+  Request failed: Your request timed out, the MotherDuck servers took too long to respond. Please try again later or contact support@motherduck.com for help. (DEADLINE_EXCEEDED, RPC 'CATALOG_LOOKUP', request id: '819671ba-b953-497a-80fe-797df0dc71a4')

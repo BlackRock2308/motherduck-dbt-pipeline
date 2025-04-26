@@ -1,0 +1,58 @@
+[32m2025-04-26 12:52:59 +0200[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - 76759 - LOGS_CAPTURED - Started capturing logs in process (pid: 76759).
+[32m2025-04-26 12:52:59 +0200[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - 76759 - immobilier_courtage_dbt_assets - STEP_START - Started execution of step "immobilier_courtage_dbt_assets".
+[32m2025-04-26 12:52:59 +0200[0m - dagster - [34mINFO[0m - __ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - A dbt subsetted execution is not being performed. Using the default dbt selection arguments `['--select', 'fqn:*']`.
+INFO:dagster.builtin:__ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - A dbt subsetted execution is not being performed. Using the default dbt selection arguments `['--select', 'fqn:*']`.
+[32m2025-04-26 12:52:59 +0200[0m - dagster - [34mINFO[0m - __ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - Copying `/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/immobilier_courtage/target/partial_parse.msgpack` to `/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/immobilier_courtage/target/immobilier_courtage_dbt_assets-51d73ec-74118f2/partial_parse.msgpack` to take advantage of partial parsing.
+INFO:dagster.builtin:__ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - Copying `/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/immobilier_courtage/target/partial_parse.msgpack` to `/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/immobilier_courtage/target/immobilier_courtage_dbt_assets-51d73ec-74118f2/partial_parse.msgpack` to take advantage of partial parsing.
+[32m2025-04-26 12:52:59 +0200[0m - dagster - [34mINFO[0m - __ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - Running dbt command: `dbt build --select fqn:*`.
+INFO:dagster.builtin:__ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - Running dbt command: `dbt build --select fqn:*`.
+[32m2025-04-26 12:54:04 +0200[0m - dagster - [34mINFO[0m - __ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - Finished dbt command: `dbt build --select fqn:*`.
+INFO:dagster.builtin:__ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - immobilier_courtage_dbt_assets - Finished dbt command: `dbt build --select fqn:*`.
+[32m2025-04-26 12:54:04 +0200[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - 51d73ec6-517f-435c-84c3-379103b45751 - 76759 - immobilier_courtage_dbt_assets - STEP_FAILURE - Execution of step "immobilier_courtage_dbt_assets" failed.
+
+dagster_dbt.errors.DagsterDbtCliRuntimeError: The dbt CLI process with command
+
+`dbt build --select fqn:*`
+
+failed with exit code `2`. Check the stdout in the Dagster compute logs for the full information about the error, or view the dbt debug log: /Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/immobilier_courtage/target/immobilier_courtage_dbt_assets-51d73ec-74118f2/dbt.log.
+
+Errors parsed from dbt logs:
+
+Encountered an error:
+Runtime Error
+  Request failed: Your request timed out, the MotherDuck servers took too long to respond. Please try again later or contact support@motherduck.com for help. (DEADLINE_EXCEEDED, RPC 'CATALOG_LOOKUP', request id: '819671ba-b953-497a-80fe-797df0dc71a4')
+
+Stack Trace:
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_core/execution/plan/execute_plan.py", line 245, in dagster_event_sequence_for_step
+    yield from check.generator(step_events)
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_core/execution/plan/execute_step.py", line 501, in core_dagster_event_sequence_for_step
+    for user_event in _step_output_error_checked_user_event_sequence(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_core/execution/plan/execute_step.py", line 184, in _step_output_error_checked_user_event_sequence
+    for user_event in user_event_sequence:
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_core/execution/plan/execute_step.py", line 88, in _process_asset_results_to_events
+    for user_event in user_event_sequence:
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_core/execution/plan/compute.py", line 186, in execute_core_compute
+    for step_output in _yield_compute_results(step_context, inputs, compute_fn, compute_context):
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_core/execution/plan/compute.py", line 155, in _yield_compute_results
+    for event in iterate_with_context(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster/_utils/__init__.py", line 391, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/dbt_dagster_immo/dbt_dagster_immo/assets.py", line 9, in immobilier_courtage_dbt_assets
+    yield from dbt.cli(["build"], context=context).stream()
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster_dbt/core/dbt_event_iterator.py", line 206, in __next__
+    return next(self._inner_iterator)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster_dbt/core/dbt_cli_invocation.py", line 276, in _stream_asset_events
+    for event in self.stream_raw_events():
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster_dbt/core/dbt_cli_invocation.py", line 368, in stream_raw_events
+    self._raise_on_error()
+  File "/Users/mbaye.sene/Documents/MUGIWARA/motherduck-dbt-pipeline/myenv/lib/python3.12/site-packages/dagster_dbt/core/dbt_cli_invocation.py", line 461, in _raise_on_error
+    raise error
+[0m
