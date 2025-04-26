@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # Chargement des styles CSS personnalisés
-with open("../assets/css/style.css") as f:
+with open("assets/css/style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
