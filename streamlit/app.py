@@ -35,14 +35,29 @@ except FileNotFoundError:
 @st.cache_resource
 def get_connect_to_motherduck():
     """
-    Établit une connexion à MotherDuck et attache la base de données
+    Establishes a connection to MotherDuck using a token from environment variable or Streamlit secrets
     """
     try:
-        # Connexion à DuckDB en mode MotherDuck
-        conn = duckdb.connect(f"md:{DATABASE_NAME}", read_only=False)
+        # First check for token in environment variables
+        token = os.environ.get("MOTHERDUCK_TOKEN")
+        
+        # If not in environment variables, try to get from Streamlit secrets
+        if not token and hasattr(st, "secrets") and "MOTHERDUCK_TOKEN" in st.secrets:
+            token = st.secrets["MOTHERDUCK_TOKEN"]
+        
+        if not token:
+            st.error("MotherDuck token not found. Please set MOTHERDUCK_TOKEN environment variable or add it to Streamlit secrets.")
+            st.stop()
+        
+        # Set the token in the environment for DuckDB to use
+        os.environ["MOTHERDUCK_TOKEN"] = token
+        
+        # Connect to MotherDuck
+        conn = duckdb.connect(f"md:{DATABASE_NAME}", read_only=True)
         return conn
     except Exception as e:
-        raise
+        st.error(f"Error connecting to MotherDuck: {e}")
+        st.stop()
 
 
 # Fonction générique pour charger les données
