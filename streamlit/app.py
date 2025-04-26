@@ -43,7 +43,7 @@ def get_connect_to_motherduck():
         
         # If not in environment variables, try to get from Streamlit secrets
         if not token and hasattr(st, "secrets") and "MOTHERDUCK_TOKEN" in st.secrets:
-            token = st.secrets["MOTHERDUCK_TOKEN"]
+            token = st.secrets["default"]["MOTHERDUCK_TOKEN"]
         
         if not token:
             st.error("MotherDuck token not found. Please set MOTHERDUCK_TOKEN environment variable or add it to Streamlit secrets.")
